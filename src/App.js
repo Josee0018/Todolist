@@ -101,7 +101,7 @@ const App = () => {
       id: e.id,
       name: e.name,
       completed: !e.completed,
-      checked: e.checked,
+      checked: !e.checked,
     });
     resetForm();
     localStorage.setItem("tasks", JSON.stringify(tasks));
