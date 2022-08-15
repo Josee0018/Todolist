@@ -2,7 +2,7 @@ import {
   GET_LIST,
   GET_LIST_LOADING,
   GET_LIST_ERROR,
-} from "../../actionTypes/person.actionType";
+} from "../../actionTypes/task.actionType";
 
 const INITIAL_STATE = {
   list: null,

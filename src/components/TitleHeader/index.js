@@ -1,10 +1,11 @@
 import React from "react";
+import "./styles.scss";
+
 
 const TitleHeader = () => {
   return (
-    <div className="container">
-      <h2>Ajax CRUD with bootstrap modals and Datatables with Bulk Delete</h2>
-      <h2>Person Data</h2>
+    <div className="container2">
+      <h2>TODO</h2>
     </div>
   );
 };

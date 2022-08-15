@@ -9,7 +9,7 @@ const ModalDelete = (props) => {
       <Modal.Header closeButton>
         <Modal.Title>Delete Person</Modal.Title>
       </Modal.Header>
-      <Modal.Body>
+      <Modal.Body >
         Are you sure you want to delete to{" "}
         {personSelectName ? personSelectName : ""}?
       </Modal.Body>
@@ -17,7 +17,7 @@ const ModalDelete = (props) => {
         <Button variant="secondary" onClick={onClick}>
           Close
         </Button>
-        <Button variant="primary" onClick={onEjecute}>
+        <Button variant="primary" autoFocus onClick={onEjecute}>
           Confirm
         </Button>
       </Modal.Footer>

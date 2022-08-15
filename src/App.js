@@ -1,73 +1,72 @@
 import "./App.scss";
-
+import { uid } from "uid";
 import ButtonB from "react-bootstrap/Button";
 import Table from "react-bootstrap/Table";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import React, { useState, useEffect } from "react";
-import Modalinput from "./components/Modalinput";
+import ModalEdit from "./components/ModalEdit";
 import ModalDelete from "./components/ModalDelete";
-import { useDispatch, useSelector } from "react-redux";
-import { getPersons } from "./redux/actions/person/person.actions";
 import TitleHeader from "./components/TitleHeader";
+import { Form } from "react-bootstrap";
+import ListGroup from "react-bootstrap/ListGroup";
+import { useDispatch, useSelector } from "react-redux";
+import { getTasks } from "./redux/actions/task/task.actions";
+import { BsPenFill, BsXLg } from "react-icons/bs";
+import InputTodo from "./components/InputTodo";
+import ImageHeader from "./components/ImageHeader";
 
 const App = () => {
   const dispatch = useDispatch();
   const { list, isLoadingList, errorList } = useSelector(
-    ({ personReducer }) => personReducer
+    ({ taskReducer }) => taskReducer
   );
   const [showModal, setShowModal] = useState(false);
-  const [personSelect, setPersonSelect] = useState("");
-  const [personSelectName, setPersonSelectName] = useState("");
+  const [taskSelect, setTaskSelect] = useState("");
+  const [filterState, setFilterState] = useState("all");
+  const [taskSelectName, setTaskSelectName] = useState("");
   const [showModalDelete, setShowModalDelete] = useState(false);
-  const [isEditable, setIsEditable] = useState(false);
   const [input, setInput] = useState({
     id: "",
     name: "",
-    lastname: "",
-    gender: "",
-    address: "",
-    birthday: "",
+    completed: "",
+    checked: "",
   });
-  const genders = [
-    { name: "male", value: "male" },
-    { name: "female", value: "female" },
-  ];
-  const [persons, setPersons] = useState(
-    // JSON.parse(localStorage.getItem("persons"))
-    null
-  );
+  const [tasks, setTasks] = useState(null);
 
   useEffect(() => {
-    dispatch(getPersons());
+    dispatch(getTasks());
     //eslint-disable-next-line
   }, []);
   useEffect(() => {
-    if (list !== null && persons === null) {
-      setPersons(list);
+    if (list !== null && tasks === null) {
+      setTasks(list);
     }
     //eslint-disable-next-line
   }, [list]);
+
+  const filterMethods = {
+    all: { method: (e) => e.id !== "" },
+    active: { method: (e) => e.completed === false },
+    completed: { method: (e) => e.completed === true },
+  };
+
   const resetForm = () => {
     setInput({
       id: "",
       name: "",
-      lastname: "",
-      gender: "",
-      address: "",
-      birthday: "",
+      completed: "",
+      checked: "",
     });
-    setIsEditable(false);
   };
   const setEditForm = (data) => {
-    setIsEditable(true);
     setInput(data);
   };
   const handleModalDelete = (data) => {
     if (data) {
       setShowModalDelete(!showModalDelete);
-      setPersonSelect(data.id);
-      setPersonSelectName(data.name);
+      setTaskSelect(data.id);
+      setTaskSelectName(data.name);
     }
   };
   const handleModalEdit = (type, data) => {
@@ -78,61 +77,88 @@ const App = () => {
     };
     CONDITION[type]();
   };
-  const editPerson = async () => {
-    persons.splice(input.id - 1, 1, {
-      id: input.id,
-      name: input.name,
-      lastname: input.lastname,
-      gender: input.gender,
-      address: input.address,
-      birthday: input.birthday,
+  // eslint-disable-next-line
+  const editTask = async () => {
+    if (input.name !== "") {
+      const index = tasks?.findIndex((element) => element.id === input.id);
+      tasks?.splice(index, 1, {
+        id: input.id,
+        name: input.name,
+        completed: input.completed,
+        checked: input.checked,
+      });
+      localStorage.setItem("tasks", JSON.stringify(tasks));
+      handleModalEdit("reset");
+    } else {
+      handleModalEdit("reset");
+    }
+  };
+
+  const completeTask = async (e) => {
+    setInput(e);
+    const index = tasks?.findIndex((element) => element.id === e.id);
+    tasks?.splice(index, 1, {
+      id: e.id,
+      name: e.name,
+      completed: !e.completed,
+      checked: e.checked,
     });
-
-    localStorage.setItem("persons", JSON.stringify(persons));
-    handleModalEdit("reset");
+    resetForm();
+    localStorage.setItem("tasks", JSON.stringify(tasks));
   };
 
-  const deletePerson = (item) => {
-    let newList = persons.filter((e) => e.id !== personSelect);
-    setPersons(newList);
+
+
+  const deleteTask = () => {
+    if(tasks?.checked !== ""){
+      console.log("todos los checked borrados");
+    }
+    let newList = tasks?.filter((e) => e.id !== taskSelect);
+    setTasks(newList);
     setShowModalDelete(!showModalDelete);
-    localStorage.setItem("persons", JSON.stringify(newList));
-
-    setPersonSelect("");
+    localStorage.setItem("tasks", JSON.stringify(newList));
+    setTaskSelect("");
   };
 
-  const addPerson = async () => {
-    handleModalEdit("reset");
-    const localPersons = localStorage.getItem("persons");
-    if (localPersons) {
-      let newId = persons.length + 1;
-      const arrayPerson = [
-        ...persons,
+  const clearCompleted = () => {
+    let newList = tasks?.filter((e) => e.completed !== true);
+    setTasks(newList);
+    localStorage.setItem("tasks", JSON.stringify(newList));
+  };
+
+  const addTask = async () => {
+    resetForm();
+    const localTask = localStorage.getItem("tasks");
+    if (localTask) {
+      let newId = uid();
+      const arrayTask = [
+        ...tasks,
         {
           id: newId,
           name: input.name,
-          lastname: input.lastname,
-          gender: input.gender,
-          address: input.address,
-          birthday: input.birthday,
+          completed: false,
+          checked: false,
         },
       ];
-      setPersons(arrayPerson);
-      localStorage.setItem("persons", JSON.stringify(arrayPerson));
+      setTasks(arrayTask);
+      localStorage.setItem("tasks", JSON.stringify(arrayTask));
     } else {
-      const arrayPerson = [
+      const arrayTask = [
         {
-          id: 1,
+          id: uid(),
           name: input.name,
-          lastname: input.lastname,
-          gender: input.gender,
-          address: input.address,
-          birthday: input.birthday,
+          completed: false,
+          checked: false,
         },
       ];
 
-      setPersons(arrayPerson);
-      localStorage.setItem("persons", JSON.stringify(arrayPerson));
+      setTasks(arrayTask);
+      localStorage.setItem("tasks", JSON.stringify(arrayTask));
+    }
+  };
+  const handleInputEnterAdd = (e) => {
+    if ((e.key === "Enter" || e.keyCode === 13) && input.name !== "") {
+      addTask();
     }
   };
 
@@ -142,6 +168,7 @@ const App = () => {
       [e.target.name]: e.target.value,
     });
   };
+
   if (isLoadingList) {
     return "loading";
   }
@@ -150,84 +177,165 @@ const App = () => {
   }
   return (
     <>
+      <ImageHeader />
       <div className="container">
         <TitleHeader />
-        <ButtonB
-          variant="success"
-          onClick={() => handleModalEdit("reset")}
-          type="summit"
-          size="sm"
-        >
-          <div>Add Person</div>
-        </ButtonB>
-        <Modalinput
-          show={showModal}
-          onHide={() => handleModalEdit("reset")}
-          onClick={isEditable ? editPerson : addPerson}
+        <InputTodo
+          HandleOnKeyUp={handleInputEnterAdd}
+          onClick={addTask}
           handleInputChange={handleInputChange}
           input={input}
-          genders={genders}
+        ></InputTodo>
+
+        <ModalEdit
+          show={showModal}
+          onHide={() => handleModalEdit("reset")}
+          onClick={editTask}
+          handleInputChange={handleInputChange}
+          input={input}
         >
-          {isEditable ? "Edit person" : "Add person"}
-        </Modalinput>
+          {"Edit person"}
+        </ModalEdit>
 
         <ModalDelete
           show={showModalDelete}
           onHide={() => handleModalDelete("reset")}
-          personSelectName={personSelectName}
+          personSelectName={taskSelectName}
           onClick={handleModalDelete}
-          onEjecute={() => deletePerson()}
+          onEjecute={() => deleteTask()}
         ></ModalDelete>
 
-        <div className="container">
-          <Table striped bordered hover>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Gender</th>
-                <th>Address</th>
-                <th>Date of birth</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
+        <div>
+          <Table hover>
             <tbody>
-              {persons?.map((item) => {
-                return (
-                  <tr key={item.id}>
-                    <td>{item.id}</td>
-                    <td>{item.name}</td>
-                    <td>{item.lastname}</td>
-                    <td>{item.gender}</td>
-                    <td>{item.address}</td>
-                    <td>{item.birthday}</td>
-                    <td>
-                      <Row xs={12}>
-                        <Col xs={5}>
-                          <ButtonB
-                            variant="primary"
-                            value={item.id}
-                            onClick={() => handleModalEdit("edit", item)}
-                          >
-                            editar
-                          </ButtonB>
-                        </Col>
-                        <Col xs={5}>
-                          <ButtonB
-                            variant="danger"
-                            value={item.id}
-                            onClick={() => handleModalDelete(item)}
-                          >
-                            eliminar
-                          </ButtonB>
-                        </Col>
-                      </Row>
-                    </td>
-                  </tr>
-                );
-              })}
+              {tasks
+                ?.sort((a, b) => a.completed - b.completed)
+                .filter(filterMethods[filterState].method)
+                .map((item) => {
+                  return (
+                    <tr key={item.id}>
+                      <td>
+                        <ListGroup.Item action>
+                          <Form>
+                            <div key={item.id} className="hover-overlay">
+                              <Form.Check
+                                inline
+                                value={input.checked}
+                                type="checkbox"
+                                onClick={() => completeTask(item)}
+                                id={`inline-${item.id}`}
+                              />
+                            </div>
+                          </Form>
+                        </ListGroup.Item>
+                      </td>
+                      <td>
+                        <ListGroup.Item
+                          key={item.id}
+                          action={item.completed ? false : true}
+                          className={item.completed ? "completed" : ""}
+                          onClick={() => completeTask(item)}
+                        >
+                          {item.name}
+                        </ListGroup.Item>
+                      </td>
+                      <td>
+                        <Row xs={12}>
+                          <Col xs={5}>
+                            <ButtonB
+                              variant="none"
+                              value={item.id}
+                              hidden={item.completed}
+                              onClick={() => handleModalEdit("edit", item)}
+                            >
+                              <BsPenFill />
+                            </ButtonB>
+                          </Col>
+                          <Col xs={5}>
+                            <ButtonB
+                              variant="none"
+                              value={item.id}
+                              onClick={() => handleModalDelete(item)}
+                            >
+                              <BsXLg />
+                            </ButtonB>
+                          </Col>
+                        </Row>
+                      </td>
+                    </tr>
+                  );
+                })}
             </tbody>
+            <tfoot>
+              <tr>
+                <td>
+                  <div>
+                    {tasks?.filter((e) => e.completed === false).length} tasks
+                    left
+                  </div>
+                </td>
+                <td>
+                  <Row xs={7}>
+                    <Col xs={2}>
+                      <ListGroup.Item
+                        action
+                        className={
+                          filterState !== "all"
+                            ? "hoverFilters"
+                            : "filterSelect"
+                        }
+                        onClick={() => setFilterState("all")}
+                      >
+                        All
+                      </ListGroup.Item>
+                    </Col>
+                    <Col xs={3}>
+                      <ListGroup.Item
+                        className={
+                          filterState !== "active"
+                            ? "hoverFilters"
+                            : "filterSelect"
+                        }
+                        action
+                        onClick={() => setFilterState("active")}
+                      >
+                        Active
+                      </ListGroup.Item>
+                    </Col>
+                    <Col>
+                      <ListGroup.Item
+                        action
+                        disabled={
+                          !tasks?.filter((e) => e.completed === true).length
+                        }
+                        className={
+                          filterState !== "completed"
+                            ? "hoverFilters"
+                            : "filterSelect"
+                        }
+                        onClick={() => setFilterState("completed")}
+                      >
+                        Completed
+                      </ListGroup.Item>
+                    </Col>
+                  </Row>
+                </td>
+                <td>
+                  <Col>
+                    <ListGroup.Item
+                      action
+                      disabled={
+                        !tasks?.filter((e) => e.completed === true).length
+                      }
+                      className="hoverFilters"
+                      onClick={() => clearCompleted()}
+                    >
+                      Clear Completed
+                    </ListGroup.Item>
+                  </Col>
+                </td>
+              </tr>
+            </tfoot>
           </Table>
         </div>
       </div>

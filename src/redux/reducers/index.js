@@ -1,8 +1,8 @@
 import { combineReducers } from "redux";
-import personReducer from "./person/person.reducer";
+import taskReducer from "./task/task.reducer";
 
 const rootReducers = combineReducers({
-  personReducer,
+  taskReducer,
 });
 
 export default rootReducers;
