@@ -1,0 +1,26 @@
+@import "~bootstrap/scss/bootstrap";
+
+.container {
+  position: relative;
+  padding: 8px;
+  top: -147px;
+}
+
+.completed{
+  color: rgb(147, 147, 147);
+  text-decoration:line-through;
+}
+
+.completed:hover{
+  cursor: pointer;
+}
+
+.hoverFilters:hover{
+  color: rgb(0, 0, 0);
+  font-weight: bolder;
+}
+
+.filterSelect{
+  color: rgb(0, 0, 0);
+  font-weight: bolder;
+}
